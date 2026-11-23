@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Vorschau – AA-FW-014 Rohrdrehmaschine RDM-02</title>
+  <title>AA-FW-014 – Rohrdrehmaschine RDM-02</title>
   <style>
     :root {
       --bg: #f1f5f9;
@@ -24,18 +24,21 @@
       color: var(--text);
     }
     .wrap {
-      max-width: 720px;
+      max-width: 760px;
       margin: 0 auto;
     }
-    .preview-banner {
-      background: #fef3c7;
-      border: 1px solid #f59e0b;
-      color: #78350f;
-      padding: 8px 12px;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: bold;
+    .top-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
       margin-bottom: 12px;
+    }
+    .app-badge {
+      font-size: 14px;
+      font-weight: bold;
+      color: var(--muted);
     }
     details.kopfdaten {
       background: var(--card);
@@ -77,10 +80,16 @@
       padding: 12px;
       margin-bottom: 12px;
     }
+    .step-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
     .step-title {
       font-weight: bold;
       font-size: 17px;
-      margin-bottom: 10px;
     }
     .field { margin-bottom: 10px; }
     label {
@@ -114,6 +123,13 @@
       margin-top: 6px;
       margin-right: 6px;
     }
+    .btn-sm {
+      min-height: 36px;
+      padding: 6px 10px;
+      font-size: 13px;
+      margin-top: 0;
+      margin-right: 0;
+    }
     .btn.active {
       background: #1d4ed8;
       color: #fff;
@@ -140,6 +156,11 @@
       color: var(--muted);
       margin-top: 6px;
     }
+    .status-note {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 8px;
+    }
     canvas {
       width: 100%;
       max-width: 440px;
@@ -151,59 +172,95 @@
       margin-top: 10px;
       touch-action: none;
     }
+    .footer-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+      padding-bottom: 24px;
+    }
+    @media print {
+      body { background: #fff; padding: 0; }
+      .top-bar, .btn, .editor-box, .hint, .status-note, .footer-actions { display: none !important; }
+      details.kopfdaten { border: 1px solid #94a3b8; }
+      details.kopfdaten > :not(summary) { display: block; }
+      .step-card, .psa-box { break-inside: avoid; box-shadow: none; }
+      input[type="text"], textarea { border: none; padding: 2px 0; font-size: 14px; }
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="preview-banner">VORSCHAU – AA-FW-014 · Rohrdrehmaschine RDM-02 (ohne KI)</div>
+    <div class="top-bar">
+      <div class="app-badge" id="kopfKurz">AA-FW-014 · RDM-02</div>
+      <div>
+        <button type="button" class="btn btn-sm" onclick="speichernLokal(true)">💾 Speichern</button>
+        <button type="button" class="btn btn-sm" onclick="window.print()">🖨️ Drucken</button>
+      </div>
+    </div>
 
-    <details class="kopfdaten">
-      <summary>Kopfdaten: AA-FW-014 · RDM-02 (zum Aufklappen tippen)</summary>
+    <details class="kopfdaten" id="kopfDetails">
+      <summary id="kopfSummary">Kopfdaten: AA-FW-014 · RDM-02 (zum Aufklappen tippen)</summary>
       <div class="kopf-grid">
         <div>
           <label for="docNr">Dokumenten-Nr.</label>
-          <input id="docNr" type="text" value="AA-FW-014" />
+          <input id="docNr" type="text" value="AA-FW-014" oninput="aktualisiereKopfKurz(); speichernLokal();" />
         </div>
         <div>
           <label for="docRev">Revision</label>
-          <input id="docRev" type="text" value="Rev. 01" />
+          <input id="docRev" type="text" value="Rev. 01" oninput="speichernLokal();" />
         </div>
         <div class="kopf-full">
           <label for="docTitel">Arbeitsanweisung / Maschine</label>
-          <input id="docTitel" type="text" value="Rüsten und Bedienen der Rohrdrehmaschine RDM-02" />
+          <input id="docTitel" type="text" value="Rüsten und Bedienen der Rohrdrehmaschine RDM-02" oninput="speichernLokal();" />
         </div>
       </div>
     </details>
 
     <div class="psa-box">
       <div class="psa-title">Sicherheit / PSA</div>
-      <textarea id="psaFeld" placeholder="Schutzbrille, Sicherheitsschuhe, Gehörschutz, keine Handschuhe an rotierenden Teilen...">Schutzbrille tragen, enganliegende Kleidung, keine Handschuhe oder lose Teile an rotierenden Maschinenteilen.</textarea>
+      <textarea id="psaFeld" oninput="speichernLokal()" placeholder="Schutzbrille, Sicherheitsschuhe, Gehörschutz, keine Handschuhe an rotierenden Teilen...">Schutzbrille tragen, enganliegende Kleidung, keine Handschuhe oder lose Teile an rotierenden Maschinenteilen.</textarea>
       <button type="button" class="btn btn-red" onclick="einsprechen('psaFeld')">🎙️ Einsprechen (optional)</button>
     </div>
 
     <div id="schritteListe"></div>
 
-    <button type="button" class="btn btn-dark" onclick="schrittHinzufuegen()">+ Arbeitsschritt hinzufügen</button>
+    <div class="footer-actions">
+      <button type="button" class="btn btn-dark" onclick="schrittHinzufuegen('', '', true)">+ Arbeitsschritt hinzufügen</button>
+      <button type="button" class="btn" onclick="entwurfZuruecksetzen()">Entwurf leeren</button>
+    </div>
+    <div class="status-note" id="speicherStatus"></div>
   </div>
 
   <script>
-    let schrittIndex = 0;
+    const STORAGE_KEY = 'aa_fw_014_rdm02_stand_v1';
+    let schrittZaehler = 0;
     const bildStatus = {};
 
-    function schrittHinzufuegen(taetigkeit = '', werkzeuge = '') {
-      schrittIndex += 1;
-      const nr = schrittIndex;
+    function aktualisiereKopfKurz() {
+      const nr = document.getElementById('docNr').value.trim() || 'AA-FW-014';
+      document.getElementById('kopfKurz').textContent = `${nr} · RDM-02`;
+      document.getElementById('kopfSummary').textContent = `Kopfdaten: ${nr} · RDM-02 (zum Aufklappen tippen)`;
+    }
+
+    function schrittHinzufuegen(taetigkeit = '', werkzeuge = '', bildDataUrl = null, formen = [], speichern = true) {
+      schrittZaehler += 1;
+      const nr = schrittZaehler;
       const karte = document.createElement('div');
       karte.className = 'step-card';
+      karte.dataset.stepId = nr;
       karte.innerHTML = `
-        <div class="step-title">Arbeitsschritt ${nr}</div>
+        <div class="step-head">
+          <div class="step-title">Arbeitsschritt <span class="step-num">${nr}</span></div>
+          <button type="button" class="btn btn-sm" onclick="schrittLoeschen(${nr})">Löschen</button>
+        </div>
         <div class="field">
           <label for="taetigkeit-${nr}">Tätigkeitsbeschreibung</label>
-          <textarea id="taetigkeit-${nr}" placeholder="Tätigkeit eintippen...">${taetigkeit}</textarea>
+          <textarea id="taetigkeit-${nr}" oninput="speichernLokal()" placeholder="Tätigkeit eintippen...">${escapeHtml(taetigkeit)}</textarea>
         </div>
         <div class="field">
           <label for="werkzeuge-${nr}">Werkzeuge / Hilfsmittel</label>
-          <input id="werkzeuge-${nr}" type="text" value="${werkzeuge}" placeholder="Werkzeuge / Hilfsmittel eintippen..." />
+          <input id="werkzeuge-${nr}" type="text" value="${escapeAttr(werkzeuge)}" oninput="speichernLokal()" placeholder="Werkzeuge / Hilfsmittel eintippen..." />
         </div>
         <div>
           <button type="button" class="btn" onclick="bildAuswaehlen(${nr})">📷 Bild laden</button>
@@ -221,7 +278,50 @@
         </div>
       `;
       document.getElementById('schritteListe').appendChild(karte);
-      canvasInitialisieren(nr);
+      canvasInitialisieren(nr, bildDataUrl, formen);
+      schrittNummernAktualisieren();
+      if (speichern) speichernLokal();
+    }
+
+    function schrittLoeschen(nr) {
+      const karten = document.querySelectorAll('#schritteListe .step-card');
+      if (karten.length <= 1) {
+        document.getElementById(`taetigkeit-${nr}`).value = '';
+        document.getElementById(`werkzeuge-${nr}`).value = '';
+        bildStatus[nr].bild = null;
+        bildStatus[nr].bildDataUrl = null;
+        bildStatus[nr].formen = [];
+        bildStatus[nr].verlauf = [];
+        bildStatus[nr].ausgewaehltIndex = -1;
+        standSpeichern(nr);
+        canvasNeuZeichnen(nr);
+        speichernLokal();
+        return;
+      }
+      const karte = document.querySelector(`#schritteListe .step-card[data-step-id="${nr}"]`);
+      if (karte) karte.remove();
+      delete bildStatus[nr];
+      schrittNummernAktualisieren();
+      speichernLokal();
+    }
+
+    function schrittNummernAktualisieren() {
+      const karten = document.querySelectorAll('#schritteListe .step-card');
+      karten.forEach((karte, idx) => {
+        const span = karte.querySelector('.step-num');
+        if (span) span.textContent = idx + 1;
+      });
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    function escapeAttr(str) {
+      return escapeHtml(str).replace(/"/g, '&quot;');
     }
 
     function objektKlonen(obj) {
@@ -230,6 +330,7 @@
 
     function standSpeichern(nr) {
       const st = bildStatus[nr];
+      if (!st) return;
       st.verlauf.push(st.formen.map(objektKlonen));
     }
 
@@ -240,6 +341,7 @@
       st.formen = st.verlauf[st.verlauf.length - 1].map(objektKlonen);
       st.ausgewaehltIndex = -1;
       canvasNeuZeichnen(nr);
+      speichernLokal();
     }
 
     function griffPosition(form) {
@@ -249,21 +351,33 @@
       return { x: form.x2, y: form.y2 };
     }
 
-    function canvasInitialisieren(nr) {
+    function canvasInitialisieren(nr, bildDataUrl = null, formen = []) {
       const canvas = document.getElementById(`canvas-${nr}`);
 
       bildStatus[nr] = {
         bild: null,
+        bildDataUrl: bildDataUrl,
         werkzeug: 'kreis',
-        formen: [],
+        formen: Array.isArray(formen) ? formen.map(objektKlonen) : [],
         verlauf: [],
         ausgewaehltIndex: -1,
-        aktion: null, // 'neu', 'verschieben', 'groesse'
+        aktion: null,
         letzterX: 0,
         letzterY: 0
       };
       standSpeichern(nr);
-      canvasNeuZeichnen(nr);
+
+      if (bildDataUrl) {
+        const img = new Image();
+        img.onload = () => {
+          if (!bildStatus[nr]) return;
+          bildStatus[nr].bild = img;
+          canvasNeuZeichnen(nr);
+        };
+        img.src = bildDataUrl;
+      } else {
+        canvasNeuZeichnen(nr);
+      }
 
       const punktErmitteln = (e) => {
         const rect = canvas.getBoundingClientRect();
@@ -298,7 +412,6 @@
         st.letzterX = p.x;
         st.letzterY = p.y;
 
-        // 1. Prüfen, ob der blaue Griffpunkt der aktiven Markierung getroffen wurde
         if (st.ausgewaehltIndex >= 0 && st.formen[st.ausgewaehltIndex]) {
           const gp = griffPosition(st.formen[st.ausgewaehltIndex]);
           if (abstand(p.x, p.y, gp.x, gp.y) <= 20) {
@@ -308,7 +421,6 @@
           }
         }
 
-        // 2. Prüfen, ob eine bestehende Markierung zum Verschieben getroffen wurde
         for (let i = st.formen.length - 1; i >= 0; i -= 1) {
           if (formTreffer(st.formen[i], p.x, p.y)) {
             st.ausgewaehltIndex = i;
@@ -318,23 +430,11 @@
           }
         }
 
-        // 3. Neue Markierung (runder Kreis oder Pfeil) anlegen
         st.aktion = 'neu';
         if (st.werkzeug === 'kreis') {
-          st.formen.push({
-            typ: 'kreis',
-            cx: p.x,
-            cy: p.y,
-            r: 24
-          });
+          st.formen.push({ typ: 'kreis', cx: p.x, cy: p.y, r: 24 });
         } else {
-          st.formen.push({
-            typ: 'pfeil',
-            x1: p.x,
-            y1: p.y,
-            x2: p.x + 24,
-            y2: p.y
-          });
+          st.formen.push({ typ: 'pfeil', x1: p.x, y1: p.y, x2: p.x + 24, y2: p.y });
         }
         st.ausgewaehltIndex = st.formen.length - 1;
         canvasNeuZeichnen(nr);
@@ -342,7 +442,7 @@
 
       const bewegenZeichnen = (e) => {
         const st = bildStatus[nr];
-        if (!st.aktion) return;
+        if (!st || !st.aktion) return;
         e.preventDefault();
         const p = punktErmitteln(e);
         const form = st.formen[st.ausgewaehltIndex];
@@ -376,11 +476,12 @@
 
       const endeZeichnen = (e) => {
         const st = bildStatus[nr];
-        if (!st.aktion) return;
+        if (!st || !st.aktion) return;
         e.preventDefault();
         st.aktion = null;
         canvasNeuZeichnen(nr);
         standSpeichern(nr);
+        speichernLokal();
       };
 
       canvas.addEventListener('mousedown', startZeichnen);
@@ -394,6 +495,7 @@
     function canvasNeuZeichnen(nr) {
       const st = bildStatus[nr];
       const canvas = document.getElementById(`canvas-${nr}`);
+      if (!st || !canvas) return;
       const ctx = canvas.getContext('2d');
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -436,3 +538,144 @@
         ctx.lineTo(form.x2 - spitze * Math.cos(winkel + Math.PI / 6), form.y2 - spitze * Math.sin(winkel + Math.PI / 6));
         ctx.closePath();
         ctx.fill();
+      }
+
+      if (ausgewaehlt) {
+        const gp = griffPosition(form);
+        ctx.fillStyle = '#1d4ed8';
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.arc(gp.x, gp.y, 9, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    function werkzeugWaehlen(nr, typ) {
+      bildStatus[nr].werkzeug = typ;
+      document.getElementById(`btn-kreis-${nr}`).classList.toggle('active', typ === 'kreis');
+      document.getElementById(`btn-pfeil-${nr}`).classList.toggle('active', typ === 'pfeil');
+    }
+
+    function editorUmschalten(nr) {
+      const box = document.getElementById(`editor-${nr}`);
+      box.style.display = box.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function bildAuswaehlen(nr) {
+      document.getElementById(`datei-${nr}`).click();
+    }
+
+    function bildLaden(event, nr) {
+      const datei = event.target.files[0];
+      if (!datei) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const dataUrl = ev.target.result;
+        const img = new Image();
+        img.onload = () => {
+          bildStatus[nr].bild = img;
+          bildStatus[nr].bildDataUrl = dataUrl;
+          bildStatus[nr].formen = [];
+          bildStatus[nr].verlauf = [];
+          bildStatus[nr].ausgewaehltIndex = -1;
+          standSpeichern(nr);
+          canvasNeuZeichnen(nr);
+          speichernLokal();
+        };
+        img.src = dataUrl;
+      };
+      reader.readAsDataURL(datei);
+    }
+
+    function einsprechen(feldId) {
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) {
+        alert('Spracheingabe wird in diesem Browser nicht unterstützt.');
+        return;
+      }
+      const rec = new SR();
+      rec.lang = 'de-DE';
+      rec.onresult = (e) => {
+        const text = e.results[0][0].transcript;
+        const feld = document.getElementById(feldId);
+        feld.value = feld.value ? `${feld.value} ${text}` : text;
+        speichernLokal();
+      };
+      rec.start();
+    }
+
+    function speichernLokal(mitHinweis = false) {
+      try {
+        const schritte = [];
+        document.querySelectorAll('#schritteListe .step-card').forEach((karte) => {
+          const id = karte.dataset.stepId;
+          const st = bildStatus[id];
+          schritte.push({
+            taetigkeit: document.getElementById(`taetigkeit-${id}`).value,
+            werkzeuge: document.getElementById(`werkzeuge-${id}`).value,
+            bildDataUrl: st ? st.bildDataUrl : null,
+            formen: st ? st.formen.map(objektKlonen) : []
+          });
+        });
+
+        const stand = {
+          docNr: document.getElementById('docNr').value,
+          docRev: document.getElementById('docRev').value,
+          docTitel: document.getElementById('docTitel').value,
+          psaFeld: document.getElementById('psaFeld').value,
+          schritte
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(stand));
+        if (mitHinweis) {
+          document.getElementById('speicherStatus').textContent = 'Entwurf lokal im Browser gespeichert.';
+        }
+      } catch (err) {
+        if (mitHinweis) {
+          document.getElementById('speicherStatus').textContent = 'Lokales Speichern aktuell nicht möglich (z. B. Bildgröße).';
+        }
+      }
+    }
+
+    function ladenLokal() {
+      try {
+        const roh = localStorage.getItem(STORAGE_KEY);
+        if (!roh) {
+          schrittHinzufuegen('', '', null, [], false);
+          return;
+        }
+        const stand = JSON.parse(roh);
+        if (typeof stand.docNr === 'string') document.getElementById('docNr').value = stand.docNr;
+        if (typeof stand.docRev === 'string') document.getElementById('docRev').value = stand.docRev;
+        if (typeof stand.docTitel === 'string') document.getElementById('docTitel').value = stand.docTitel;
+        if (typeof stand.psaFeld === 'string') document.getElementById('psaFeld').value = stand.psaFeld;
+        aktualisiereKopfKurz();
+
+        if (Array.isArray(stand.schritte) && stand.schritte.length > 0) {
+          stand.schritte.forEach((s) => {
+            schrittHinzufuegen(s.taetigkeit || '', s.werkzeuge || '', s.bildDataUrl || null, s.formen || [], false);
+          });
+        } else {
+          schrittHinzufuegen('', '', null, [], false);
+        }
+      } catch (err) {
+        schrittHinzufuegen('', '', null, [], false);
+      }
+    }
+
+    function entwurfZuruecksetzen() {
+      if (!confirm('Alle eingegebenen Schritte und Markierungen zurücksetzen?')) return;
+      localStorage.removeItem(STORAGE_KEY);
+      document.getElementById('schritteListe').innerHTML = '';
+      schrittZaehler = 0;
+      Object.keys(bildStatus).forEach((k) => delete bildStatus[k]);
+      schrittHinzufuegen('', '', null, [], false);
+      document.getElementById('speicherStatus').textContent = 'Entwurf zurückgesetzt.';
+    }
+
+    ladenLokal();
+  </script>
+</body>
+</html>
