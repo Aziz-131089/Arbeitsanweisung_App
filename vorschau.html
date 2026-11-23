@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vorschau – AA-FW-014 Rohrdrehmaschine RDM-02</title>
+  <style>
+    :root {
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --border: #cbd5e1;
+      --text: #0f172a;
+      --muted: #475569;
+      --primary: #0f172a;
+      --danger: #dc2626;
+      --danger-bg: #fff1f2;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 12px;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .wrap {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .preview-banner {
+      background: #fef3c7;
+      border: 1px solid #f59e0b;
+      color: #78350f;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+    details.kopfdaten {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 14px;
+      margin-bottom: 12px;
+    }
+    details.kopfdaten summary {
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+      list-style: none;
+    }
+    .kopf-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .kopf-full { grid-column: 1 / -1; }
+    .psa-box {
+      background: var(--danger-bg);
+      border: 2px solid var(--danger);
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+    .psa-title {
+      color: var(--danger);
+      font-weight: bold;
+      font-size: 17px;
+      margin-bottom: 8px;
+    }
+    .step-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+    .step-title {
+      font-weight: bold;
+      font-size: 17px;
+      margin-bottom: 10px;
+    }
+    .field { margin-bottom: 10px; }
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: bold;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    input[type="text"], textarea {
+      width: 100%;
+      font-size: 16px;
+      padding: 10px 12px;
+      border: 1px solid #94a3b8;
+      border-radius: 8px;
+      background: #fff;
+      color: var(--text);
+      font-family: inherit;
+    }
+    textarea { min-height: 78px; resize: vertical; }
+    .btn {
+      min-height: 46px;
+      padding: 10px 14px;
+      font-size: 15px;
+      font-weight: bold;
+      border-radius: 8px;
+      border: 1px solid #64748b;
+      background: #fff;
+      color: var(--text);
+      cursor: pointer;
+      margin-top: 6px;
+      margin-right: 6px;
+    }
+    .btn.active {
+      background: #1d4ed8;
+      color: #fff;
+      border-color: #1d4ed8;
+    }
+    .btn-dark {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+    .btn-red {
+      background: var(--danger);
+      color: #fff;
+      border-color: var(--danger);
+    }
+    .editor-box {
+      display: none;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed var(--border);
+    }
+    canvas {
+      width: 100%;
+      max-width: 440px;
+      aspect-ratio: 4 / 3;
+      border: 1px solid #94a3b8;
+      border-radius: 8px;
+      background: #e2e8f0;
+      display: block;
+      margin-top: 10px;
+      touch-action: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="preview-banner">VORSCHAU – AA-FW-014 · Rohrdrehmaschine RDM-02 (ohne KI)</div>
+
+    <details class="kopfdaten">
+      <summary>Kopfdaten: AA-FW-014 · RDM-02 (zum Aufklappen tippen)</summary>
+      <div class="kopf-grid">
+        <div>
+          <label for="docNr">Dokumenten-Nr.</label>
+          <input id="docNr" type="text" value="AA-FW-014" />
+        </div>
+        <div>
+          <label for="docRev">Revision</label>
+          <input id="docRev" type="text" value="Rev. 01" />
+        </div>
+        <div class="kopf-full">
+          <label for="docTitel">Arbeitsanweisung / Maschine</label>
+          <input id="docTitel" type="text" value="Rüsten und Bedienen der Rohrdrehmaschine RDM-02" />
+        </div>
+      </div>
+    </details>
+
+    <div class="psa-box">
+      <div class="psa-title">Sicherheit / PSA</div>
+      <textarea id="psaFeld" placeholder="Schutzbrille, Sicherheitsschuhe, Gehörschutz, keine Handschuhe an rotierenden Teilen...">Schutzbrille tragen, enganliegende Kleidung, keine Handschuhe oder lose Teile an rotierenden Maschinenteilen.</textarea>
+      <button type="button" class="btn btn-red" onclick="einsprechen('psaFeld')">🎙️ Einsprechen (optional)</button>
+    </div>
+
+    <div id="schritteListe"></div>
+
+    <button type="button" class="btn btn-dark" onclick="schrittHinzufuegen()">+ Arbeitsschritt hinzufügen</button>
+  </div>
+
+  <script>
+    let schrittIndex = 0;
+    const bildStatus = {};
+
+    function schrittHinzufuegen(taetigkeit = '', werkzeuge = '') {
+      schrittIndex += 1;
+      const nr = schrittIndex;
+      const karte = document.createElement('div');
+      karte.className = 'step-card';
+      karte.innerHTML = `
+        <div class="step-title">Arbeitsschritt ${nr}</div>
+        <div class="field">
+          <label for="taetigkeit-${nr}">Tätigkeitsbeschreibung</label>
+          <textarea id="taetigkeit-${nr}" placeholder="Tätigkeit eintippen...">${taetigkeit}</textarea>
+        </div>
+        <div class="field">
+          <label for="werkzeuge-${nr}">Werkzeuge / Hilfsmittel</label>
+          <input id="werkzeuge-${nr}" type="text" value="${werkzeuge}" placeholder="Werkzeuge / Hilfsmittel eintippen..." />
+        </div>
+        <div>
+          <button type="button" class="btn" onclick="bildAuswaehlen(${nr})">📷 Bild laden</button>
+          <button type="button" class="btn" onclick="editorUmschalten(${nr})">Bild bearbeiten</button>
+          <input type="file" id="datei-${nr}" accept="image/*" style="display:none" onchange="bildLaden(event, ${nr})" />
+        </div>
+        <div id="editor-${nr}" class="editor-box">
+          <div>
+            <button type="button" id="btn-kreis-${nr}" class="btn active" onclick="werkzeugWaehlen(${nr}, 'kreis')">Roter Kreis</button>
+            <button type="button" id="btn-pfeil-${nr}" class="btn" onclick="werkzeugWaehlen(${nr}, 'pfeil')">Roter Pfeil</button>
+            <button type="button" class="btn btn-dark" onclick="rueckgaengig(${nr})">↩ Rückgängig</button>
+          </div>
+          <canvas id="canvas-${nr}" width="440" height="330"></canvas>
+        </div>
+      `;
+      document.getElementById('schritteListe').appendChild(karte);
+      canvasInitialisieren(nr);
+    }
+
+    function canvasInitialisieren(nr) {
+      const canvas = document.getElementById(`canvas-${nr}`);
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#e2e8f0';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#334155';
+      ctx.font = '15px Arial';
+      ctx.fillText('Bild laden und Kreis oder Pfeil ziehen', 20, 42);
+
+      bildStatus[nr] = {
+        werkzeug: 'kreis',
+        verlauf: [],
+        zeichnet: false,
+        startX: 0,
+        startY: 0
+      };
+      standSpeichern(nr);
+
+      const punktErmitteln = (e) => {
+        const rect = canvas.getBoundingClientRect();
+        constquelle = e.touches && e.touches.length ? e.touches[0] : (e.changedTouches && e.changedTouches.length ? e.changedTouches[0] : e);
+        const clientX = constquelle.clientX;
+        const clientY = constquelle.clientY;
+        return {
+          x: ((clientX - rect.left) * canvas.width) / rect.width,
+          y: ((clientY - rect.top) * canvas.height) / rect.height
+        };
+      };
+
+      const startZeichnen = (e) => {
+        e.preventDefault();
+        const p = punktErmitteln(e);
+        bildStatus[nr].zeichnet = true;
+        bildStatus[nr].startX = p.x;
+        bildStatus[nr].startY = p.y;
+      };
+
+      const endeZeichnen = (e) => {
+        if (!bildStatus[nr].zeichnet) return;
+        e.preventDefault();
+        const p = punktErmitteln(e);
+        standSpeichern(nr);
+        formZeichnen(ctx, bildStatus[nr].werkzeug, bildStatus[nr].startX, bildStatus[nr].startY, p.x, p.y);
+        bildStatus[nr].zeichnet = false;
+      };
+
+      canvas.addEventListener('mousedown', startZeichnen);
+      canvas.addEventListener('mouseup', endeZeichnen);
+      canvas.addEventListener('touchstart', startZeichnen, { passive: false });
+      canvas.addEventListener('touchend', endeZeichnen, { passive: false });
+    }
+
+    function standSpeichern(nr) {
+      const canvas = document.getElementById(`canvas-${nr}`);
+      const ctx = canvas.getContext('2d');
+      bildStatus[nr].verlauf.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+    }
+
+    function rueckgaengig(nr) {
+      const st = bildStatus[nr];
+      if (!st || st.verlauf.length <= 1) return;
+      st.verlauf.pop();
+      const vorher = st.verlauf[st.verlauf.length - 1];
+      const canvas = document.getElementById(`canvas-${nr}`);
+      canvas.getContext('2d').putImageData(vorher, 0, 0);
+    }
+
+    function werkzeugWaehlen(nr, typ) {
+      bildStatus[nr].werkzeug = typ;
+      document.getElementById(`btn-kreis-${nr}`).classList.toggle('active', typ === 'kreis');
+      document.getElementById(`btn-pfeil-${nr}`).classList.toggle('active', typ === 'pfeil');
+    }
+
+    function editorUmschalten(nr) {
+      const box = document.getElementById(`editor-${nr}`);
+      box.style.display = box.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function bildAuswaehlen(nr) {
+      document.getElementById(`datei-${nr}`).click();
+    }
+
+    function bildLaden(event, nr) {
+      const datei = event.target.files[0];
+      if (!datei) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.getElementById(`canvas-${nr}`);
+          const ctx = canvas.getContext('2d');
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          bildStatus[nr].verlauf = [];
+          standSpeichern(nr);
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(datei);
+    }
+
+    function formZeichnen(ctx, typ, x1, y1, x2, y2) {
+      ctx.save();
+      ctx.strokeStyle = '#dc2626';
+      ctx.fillStyle = '#dc2626';
+      ctx.lineWidth = 4;
+
+      if (typ === 'kreis') {
+        const rx = Math.max(12, Math.abs(x2 - x1) / 2);
+        const ry = Math.max(12, Math.abs(y2 - y1) / 2);
+        const cx = (x1 + x2) / 2;
+        const cy = (y1 + y2) / 2;
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+        ctx.stroke();
+      } else {
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+
+        const winkel = Math.atan2(y2 - y1, x2 - x1);
+        const spitze = 14;
+        ctx.beginPath();
+        ctx.moveTo(x2, y2);
+        ctx.lineTo(x2 - spitze * Math.cos(winkel - Math.PI / 6), y2 - spitze * Math.sin(winkel - Math.PI / 6));
+        ctx.lineTo(x2 - spitze * Math.cos(winkel + Math.PI / 6), y2 - spitze * Math.sin(winkel + Math.PI / 6));
+        ctx.closePath();
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    function einsprechen(feldId) {
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) {
+        alert('Spracheingabe wird in diesem Browser nicht unterstützt.');
+        return;
+      }
+      const rec = new SR();
+      rec.lang = 'de-DE';
+      rec.onresult = (e) => {
+        const text = e.results[0][0].transcript;
+        const feld = document.getElementById(feldId);
+        feld.value = feld.value ? `${feld.value} ${text}` : text;
+      };
+      rec.start();
+    }
+
+    schrittHinzufuegen();
+  </script>
+</body>
+</html>
