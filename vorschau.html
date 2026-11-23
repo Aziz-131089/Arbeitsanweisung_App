@@ -135,6 +135,11 @@
       padding-top: 10px;
       border-top: 1px dashed var(--border);
     }
+    .hint {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
     canvas {
       width: 100%;
       max-width: 440px;
@@ -211,6 +216,7 @@
             <button type="button" id="btn-pfeil-${nr}" class="btn" onclick="werkzeugWaehlen(${nr}, 'pfeil')">Roter Pfeil</button>
             <button type="button" class="btn btn-dark" onclick="rueckgaengig(${nr})">↩ Rückgängig</button>
           </div>
+          <div class="hint">Markierung antippen &amp; in der Mitte verschieben oder am Griff/Ende Größe ändern.</div>
           <canvas id="canvas-${nr}" width="440" height="330"></canvas>
         </div>
       `;
@@ -218,69 +224,244 @@
       canvasInitialisieren(nr);
     }
 
-    function canvasInitialisieren(nr) {
-      const canvas = document.getElementById(`canvas-${nr}`);
-      const ctx = canvas.getContext('2d');
-      ctx.fillStyle = '#e2e8f0';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = '#334155';
-      ctx.font = '15px Arial';
-      ctx.fillText('Bild laden und Kreis oder Pfeil ziehen', 20, 42);
-
-      bildStatus[nr] = {
-        werkzeug: 'kreis',
-        verlauf: [],
-        zeichnet: false,
-        startX: 0,
-        startY: 0
-      };
-      standSpeichern(nr);
-
-      const punktErmitteln = (e) => {
-        const rect = canvas.getBoundingClientRect();
-        const quelle = e.touches && e.touches.length ? e.touches[0] : (e.changedTouches && e.changedTouches.length ? e.changedTouches[0] : e);
-        return {
-          x: ((quelle.clientX - rect.left) * canvas.width) / rect.width,
-          y: ((quelle.clientY - rect.top) * canvas.height) / rect.height
-        };
-      };
-
-      const startZeichnen = (e) => {
-        e.preventDefault();
-        const p = punktErmitteln(e);
-        bildStatus[nr].zeichnet = true;
-        bildStatus[nr].startX = p.x;
-        bildStatus[nr].startY = p.y;
-      };
-
-      const endeZeichnen = (e) => {
-        if (!bildStatus[nr].zeichnet) return;
-        e.preventDefault();
-        const p = punktErmitteln(e);
-        standSpeichern(nr);
-        formZeichnen(ctx, bildStatus[nr].werkzeug, bildStatus[nr].startX, bildStatus[nr].startY, p.x, p.y);
-        bildStatus[nr].zeichnet = false;
-      };
-
-      canvas.addEventListener('mousedown', startZeichnen);
-      canvas.addEventListener('mouseup', endeZeichnen);
-      canvas.addEventListener('touchstart', startZeichnen, { passive: false });
-      canvas.addEventListener('touchend', endeZeichnen, { passive: false });
+    function objektKlonen(obj) {
+      return JSON.parse(JSON.stringify(obj));
     }
 
     function standSpeichern(nr) {
-      const canvas = document.getElementById(`canvas-${nr}`);
-      const ctx = canvas.getContext('2d');
-      bildStatus[nr].verlauf.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+      const st = bildStatus[nr];
+      st.verlauf.push(st.formen.map(objektKlonen));
     }
 
     function rueckgaengig(nr) {
       const st = bildStatus[nr];
       if (!st || st.verlauf.length <= 1) return;
       st.verlauf.pop();
-      const vorher = st.verlauf[st.verlauf.length - 1];
+      st.formen = st.verlauf[st.verlauf.length - 1].map(objektKlonen);
+      st.ausgewaehltIndex = -1;
+      canvasNeuZeichnen(nr);
+    }
+
+    function canvasInitialisieren(nr) {
       const canvas = document.getElementById(`canvas-${nr}`);
-      canvas.getContext('2d').putImageData(vorher, 0, 0);
+
+      bildStatus[nr] = {
+        bild: null,
+        werkzeug: 'kreis',
+        formen: [],
+        verlauf: [],
+        ausgewaehltIndex: -1,
+        aktion: null, // 'neu', 'verschieben', 'groesse'
+        griffTyp: null, // 'x1y1', 'x2y2'
+        startX: 0,
+        startY: 0,
+        letzterX: 0,
+        letzterY: 0
+      };
+      standSpeichern(nr);
+      canvasNeuZeichnen(nr);
+
+      const punktErmitteln = (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const quelle = e.touches && e.touches.length
+          ? e.touches[0]
+          : (e.changedTouches && e.changedTouches.length ? e.changedTouches[0] : e);
+        return {
+          x: ((quelle.clientX - rect.left) * canvas.width) / rect.width,
+          y: ((quelle.clientY - rect.top) * canvas.height) / rect.height
+        };
+      };
+
+      const abstand = (ax, ay, bx, by) => Math.hypot(ax - bx, ay - by);
+
+      const griffTreffer = (form, px, py) => {
+        if (abstand(px, py, form.x1, form.y1) <= 18) return 'x1y1';
+        if (abstand(px, py, form.x2, form.y2) <= 18) return 'x2y2';
+        return null;
+      };
+
+      const formTreffer = (form, px, py) => {
+        if (form.typ === 'kreis') {
+          const cx = (form.x1 + form.x2) / 2;
+          const cy = (form.y1 + form.y2) / 2;
+          const rx = Math.max(18, Math.abs(form.x2 - form.x1) / 2);
+          const ry = Math.max(18, Math.abs(form.y2 - form.y1) / 2);
+          const norm = ((px - cx) ** 2) / ((rx + 12) ** 2) + ((py - cy) ** 2) / ((ry + 12) ** 2);
+          return norm <= 1.25;
+        }
+        const dx = form.x2 - form.x1;
+        const dy = form.y2 - form.y1;
+        const lenSq = dx * dx + dy * dy || 1;
+        const t = Math.max(0, Math.min(1, ((px - form.x1) * dx + (py - form.y1) * dy) / lenSq));
+        const projX = form.x1 + t * dx;
+        const projY = form.y1 + t * dy;
+        return abstand(px, py, projX, projY) <= 16;
+      };
+
+      const startZeichnen = (e) => {
+        e.preventDefault();
+        const st = bildStatus[nr];
+        const p = punktErmitteln(e);
+        st.startX = p.x;
+        st.startY = p.y;
+        st.letzterX = p.x;
+        st.letzterY = p.y;
+
+        if (st.ausgewaehltIndex >= 0 && st.formen[st.ausgewaehltIndex]) {
+          const griff = griffTreffer(st.formen[st.ausgewaehltIndex], p.x, p.y);
+          if (griff) {
+            st.aktion = 'groesse';
+            st.griffTyp = griff;
+            canvasNeuZeichnen(nr);
+            return;
+          }
+        }
+
+        for (let i = st.formen.length - 1; i >= 0; i -= 1) {
+          if (formTreffer(st.formen[i], p.x, p.y)) {
+            st.ausgewaehltIndex = i;
+            st.aktion = 'verschieben';
+            st.griffTyp = null;
+            canvasNeuZeichnen(nr);
+            return;
+          }
+        }
+
+        st.ausgewaehltIndex = -1;
+        st.aktion = 'neu';
+        st.griffTyp = null;
+        st.formen.push({
+          typ: st.werkzeug,
+          x1: p.x,
+          y1: p.y,
+          x2: p.x + 12,
+          y2: p.y + 12
+        });
+        st.ausgewaehltIndex = st.formen.length - 1;
+        canvasNeuZeichnen(nr);
+      };
+
+      const bewegenZeichnen = (e) => {
+        const st = bildStatus[nr];
+        if (!st.aktion) return;
+        e.preventDefault();
+        const p = punktErmitteln(e);
+        const form = st.formen[st.ausgewaehltIndex];
+        if (!form) return;
+
+        if (st.aktion === 'neu') {
+          form.x2 = p.x;
+          form.y2 = p.y;
+        } else if (st.aktion === 'verschieben') {
+          const dx = p.x - st.letzterX;
+          const dy = p.y - st.letzterY;
+          form.x1 += dx;
+          form.y1 += dy;
+          form.x2 += dx;
+          form.y2 += dy;
+        } else if (st.aktion === 'groesse') {
+          if (st.griffTyp === 'x1y1') {
+            form.x1 = p.x;
+            form.y1 = p.y;
+          } else {
+            form.x2 = p.x;
+            form.y2 = p.y;
+          }
+        }
+
+        st.letzterX = p.x;
+        st.letzterY = p.y;
+        canvasNeuZeichnen(nr);
+      };
+
+      const endeZeichnen = (e) => {
+        const st = bildStatus[nr];
+        if (!st.aktion) return;
+        e.preventDefault();
+        const form = st.formen[st.ausgewaehltIndex];
+        if (st.aktion === 'neu' && form) {
+          if (abstand(form.x1, form.y1, form.x2, form.y2) < 10) {
+            form.x2 = form.x1 + 36;
+            form.y2 = form.y1 + 36;
+          }
+        }
+        st.aktion = null;
+        st.griffTyp = null;
+        canvasNeuZeichnen(nr);
+        standSpeichern(nr);
+      };
+
+      canvas.addEventListener('mousedown', startZeichnen);
+      window.addEventListener('mousemove', bewegenZeichnen);
+      window.addEventListener('mouseup', endeZeichnen);
+      canvas.addEventListener('touchstart', startZeichnen, { passive: false });
+      canvas.addEventListener('touchmove', bewegenZeichnen, { passive: false });
+      canvas.addEventListener('touchend', endeZeichnen, { passive: false });
+    }
+
+    function canvasNeuZeichnen(nr) {
+      const st = bildStatus[nr];
+      const canvas = document.getElementById(`canvas-${nr}`);
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if (st.bild) {
+        ctx.drawImage(st.bild, 0, 0, canvas.width, canvas.height);
+      } else {
+        ctx.fillStyle = '#e2e8f0';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#334155';
+        ctx.font = '15px Arial';
+        ctx.fillText('Bild laden und Kreis oder Pfeil ziehen', 20, 42);
+      }
+
+      st.formen.forEach((form, idx) => {
+        formZeichnen(ctx, form, idx === st.ausgewaehltIndex);
+      });
+    }
+
+    function formZeichnen(ctx, form, ausgewaehlt) {
+      ctx.save();
+      ctx.strokeStyle = '#dc2626';
+      ctx.fillStyle = '#dc2626';
+      ctx.lineWidth = 4;
+
+      if (form.typ === 'kreis') {
+        const rx = Math.max(12, Math.abs(form.x2 - form.x1) / 2);
+        const ry = Math.max(12, Math.abs(form.y2 - form.y1) / 2);
+        const cx = (form.x1 + form.x2) / 2;
+        const cy = (form.y1 + form.y2) / 2;
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+        ctx.stroke();
+      } else {
+        ctx.beginPath();
+        ctx.moveTo(form.x1, form.y1);
+        ctx.lineTo(form.x2, form.y2);
+        ctx.stroke();
+
+        const winkel = Math.atan2(form.y2 - form.y1, form.x2 - form.x1);
+        const spitze = 14;
+        ctx.beginPath();
+        ctx.moveTo(form.x2, form.y2);
+        ctx.lineTo(form.x2 - spitze * Math.cos(winkel - Math.PI / 6), form.y2 - spitze * Math.sin(winkel - Math.PI / 6));
+        ctx.lineTo(form.x2 - spitze * Math.cos(winkel + Math.PI / 6), form.y2 - spitze * Math.sin(winkel + Math.PI / 6));
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      if (ausgewaehlt) {
+        ctx.fillStyle = '#1d4ed8';
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        [[form.x1, form.y1], [form.x2, form.y2]].forEach(([gx, gy]) => {
+          ctx.beginPath();
+          ctx.arc(gx, gy, 8, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+        });
+      }
+      ctx.restore();
     }
 
     function werkzeugWaehlen(nr, typ) {
@@ -305,48 +486,16 @@
       reader.onload = (ev) => {
         const img = new Image();
         img.onload = () => {
-          const canvas = document.getElementById(`canvas-${nr}`);
-          const ctx = canvas.getContext('2d');
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          bildStatus[nr].bild = img;
+          bildStatus[nr].formen = [];
           bildStatus[nr].verlauf = [];
+          bildStatus[nr].ausgewaehltIndex = -1;
           standSpeichern(nr);
+          canvasNeuZeichnen(nr);
         };
         img.src = ev.target.result;
       };
       reader.readAsDataURL(datei);
-    }
-
-    function formZeichnen(ctx, typ, x1, y1, x2, y2) {
-      ctx.save();
-      ctx.strokeStyle = '#dc2626';
-      ctx.fillStyle = '#dc2626';
-      ctx.lineWidth = 4;
-
-      if (typ === 'kreis') {
-        const rx = Math.max(12, Math.abs(x2 - x1) / 2);
-        const ry = Math.max(12, Math.abs(y2 - y1) / 2);
-        const cx = (x1 + x2) / 2;
-        const cy = (y1 + y2) / 2;
-        ctx.beginPath();
-        ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
-        ctx.stroke();
-      } else {
-        ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
-        ctx.stroke();
-
-        const winkel = Math.atan2(y2 - y1, x2 - x1);
-        const spitze = 14;
-        ctx.beginPath();
-        ctx.moveTo(x2, y2);
-        ctx.lineTo(x2 - spitze * Math.cos(winkel - Math.PI / 6), y2 - spitze * Math.sin(winkel - Math.PI / 6));
-        ctx.lineTo(x2 - spitze * Math.cos(winkel + Math.PI / 6), y2 - spitze * Math.sin(winkel + Math.PI / 6));
-        ctx.closePath();
-        ctx.fill();
-      }
-      ctx.restore();
     }
 
     function einsprechen(feldId) {
