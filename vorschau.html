@@ -238,12 +238,10 @@
 
       const punktErmitteln = (e) => {
         const rect = canvas.getBoundingClientRect();
-        constquelle = e.touches && e.touches.length ? e.touches[0] : (e.changedTouches && e.changedTouches.length ? e.changedTouches[0] : e);
-        const clientX = constquelle.clientX;
-        const clientY = constquelle.clientY;
+        const quelle = e.touches && e.touches.length ? e.touches[0] : (e.changedTouches && e.changedTouches.length ? e.changedTouches[0] : e);
         return {
-          x: ((clientX - rect.left) * canvas.width) / rect.width,
-          y: ((clientY - rect.top) * canvas.height) / rect.height
+          x: ((quelle.clientX - rect.left) * canvas.width) / rect.width,
+          y: ((quelle.clientY - rect.top) * canvas.height) / rect.height
         };
       };
 
