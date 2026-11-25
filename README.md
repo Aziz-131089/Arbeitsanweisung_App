@@ -104,3 +104,4 @@ Alle fünf Testsuiten sind mit Node-Standardmitteln ausführbar. Sie prüfen unt
 V3.3 nutzt unverändert lokale Browserspeicherung. Aktive Entwürfe und Bilder werden nicht in GitHub oder Cloudflare gespeichert. `localStorage` ist der primäre Speicher; bei Platzmangel wird IndexedDB verwendet. JSON-Sicherungen enthalten Bilder und Markierungen. Ein Arbeitsplatzwechsel oder Löschen der Browserdaten kann lokale Entwürfe unzugänglich machen. Daher relevante Entwürfe separat sichern. Spracheingabe ist optional und abhängig vom verwendeten Browser.
 
 Die App erstellt Arbeitsanweisungen; sie ersetzt keine fachliche Freigabe oder zentrale Dokumentenlenkung. Diese V3.3 führt keinen neuen Zugriffsschutz ein. Die bestehende firmenbezogene Voreinstellung (ESW) und das Logo sind bewusst unverändert. Für eine unternehmensübergreifende Produktversion müssen Firmen-/Layoutkonfiguration und Berechtigung separat festgelegt werden.
+Cloudflare-Vorschau für V3.3 eingerichtet.
