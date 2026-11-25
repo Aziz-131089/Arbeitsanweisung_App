@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.wrangler/
+coverage/
+*.log
+.env
+.env.*
+!.env.example
+*.docx
+*_Entwurf.json

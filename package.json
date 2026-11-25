@@ -1,0 +1,14 @@
+{
+  "name": "dedak2-arbeitsanweisung",
+  "version": "3.3.0",
+  "private": true,
+  "type": "module",
+  "description": "Mobile Arbeitsanweisungs-App mit lokalem Entwurf und nativem Word-Export",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "node scripts/build.mjs --check",
+    "test": "npm run check && node --test",
+    "verify:refactor": "node scripts/verify-v32-parity.mjs"
+  }
+}

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Arbeitsanweisungs-App · V__APP_VERSION__</title>
+  <style>
+/*__STYLES__*/  </style>
+</head>
+<body>
+  <main class="app-shell">
+    <header class="app-header">
+      <div>
+        <div class="eyebrow">Qualitätsmanagement · Fertigung</div>
+        <h1>Arbeitsanweisungs-App <span class="test-tag">V__APP_VERSION__</span></h1>
+        <div class="app-badge" id="kopfKurz">Arbeitsanweisung</div>
+      </div>
+    </header>
+    <div class="toolbar" id="appToolbar">
+      <div class="tabs" role="tablist" aria-label="Ansicht wählen">
+        <button type="button" id="editTab" class="btn tab" role="tab" aria-controls="editorPanel" aria-selected="true">Bearbeiten</button>
+        <button type="button" id="previewTab" class="btn tab" role="tab" aria-controls="previewPanel" aria-selected="false">Dokumentenvorschau</button>
+      </div>
+      <div class="button-row">
+        <button type="button" class="btn" id="resetBtn" title="Eine neue Arbeitsanweisung beginnen">Neue AA</button>
+        <button type="button" class="btn" id="saveBtn">Speichern</button>
+        <button type="button" class="btn" id="printBtn">Drucken</button>
+        <button type="button" class="btn btn-blue" id="wordBtn">Word (.docx)</button>
+      </div>
+    </div>
+    <div id="speicherStatus" class="status-note" role="status" aria-live="polite">Entwurf wird geladen …</div>
+    <div id="initialLoading" class="loading-banner">Der lokale Entwurf wird geladen.</div>
+    <div id="editorPanel" role="tabpanel" aria-labelledby="editTab" hidden>
+      <details class="card kopfdaten" id="kopfDetails">
+        <summary id="kopfSummary">Kopfdaten</summary>
+        <p class="summary-note">Dokument, Geltungsbereich und Logo bearbeiten.</p>
+        <div class="kopf-grid">
+          <div>
+            <label for="docNr">Dokumenten-Nr.</label>
+            <input id="docNr" type="text" maxlength="60" placeholder="AA-FW-014">
+          </div>
+          <div>
+            <label for="docRev">Revision</label>
+            <input id="docRev" type="text" maxlength="30" placeholder="01">
+          </div>
+          <div class="kopf-full">
+            <label for="docTitel">Arbeitsanweisung / Maschine</label>
+            <input id="docTitel" type="text" maxlength="240" placeholder="Titel der Arbeitsanweisung">
+          </div>
+          <div>
+            <label for="docFirma">Unternehmen</label>
+            <input id="docFirma" type="text" maxlength="180">
+          </div>
+          <div>
+            <label for="docArbeitsplatz">Arbeitsplatz / Bereich</label>
+            <input id="docArbeitsplatz" type="text" maxlength="180">
+          </div>
+          <div>
+            <label for="docStand">Stand</label>
+            <input id="docStand" type="date">
+          </div>
+          <div>
+            <label>Unternehmenslogo</label>
+            <div class="logo-controls">
+              <img id="logoPreview" class="logo-preview" alt="Aktuelles Unternehmenslogo" hidden>
+              <span id="logoEmpty" class="hint">Kein Logo hinterlegt</span>
+              <button type="button" class="btn" id="logoChooseBtn">Logo wählen</button>
+              <button type="button" class="btn btn-danger" id="logoRemoveBtn" hidden>Entfernen</button>
+              <input id="logoFile" type="file" accept="image/*" hidden>
+            </div>
+          </div>
+          <div class="form-section-title">Zweck und Geltungsbereich (optional)</div>
+          <div class="kopf-full">
+            <label for="docZweck">Zweck und Ziel</label>
+            <textarea id="docZweck" placeholder="Was wird beschrieben und welches Ziel verfolgt die Arbeitsanweisung?"></textarea>
+          </div>
+          <div class="kopf-full">
+            <label for="docGeltung">Geltungsbereich</label>
+            <textarea id="docGeltung" placeholder="Für welche Mitarbeiter, Tätigkeiten und Bereiche gilt die Arbeitsanweisung?"></textarea>
+          </div>
+        </div>
+      </details>
+      <details class="card fussdaten" id="fussDetails">
+        <summary id="fussSummary">Fußdaten</summary>
+        <p class="summary-note">Verteiler, Erstellung und fachliche Freigabe für die Fußzeile bearbeiten.</p>
+        <div class="kopf-grid">
+          <fieldset class="kopf-full verteiler-field">
+            <legend>Verteiler</legend>
+            <div class="hint">Abteilungen für die Dokumentenverteilung auswählen (Mehrfachauswahl).</div>
+            <div id="verteilerOptions" class="verteiler-grid"></div>
+            <input id="verteiler" type="hidden" value="">
+            <p id="verteilerSummary" class="verteiler-selected" aria-live="polite">Keine Abteilung ausgewählt.</p>
+            <p id="verteilerLegacy" class="hint verteiler-legacy" hidden></p>
+          </fieldset>
+          <div>
+            <label for="erstelltDurch">Erstellt durch</label>
+            <input id="erstelltDurch" type="text" maxlength="150" placeholder="Name / Funktion">
+          </div>
+          <div>
+            <label for="erstelltDatum">Erstellt am</label>
+            <input id="erstelltDatum" type="date">
+          </div>
+          <div>
+            <label for="freigegebenDurch">Geprüft &amp; freigegeben durch</label>
+            <input id="freigegebenDurch" type="text" maxlength="150" placeholder="Nach fachlicher Freigabe">
+          </div>
+          <div>
+            <label for="freigegebenDatum">Freigegeben am</label>
+            <input id="freigegebenDatum" type="date">
+          </div>
+          <div class="kopf-full hint">Freigabedaten werden nicht automatisch vergeben. Die Arbeitsanweisung ist vor ihrer Verwendung fachlich zu prüfen.</div>
+        </div>
+      </details>
+      <details class="psa-box" id="psaDetails">
+        <summary class="psa-title" id="psaHeading">Sicherheit / PSA</summary>
+        <label for="psaFeld">Übergreifende Sicherheitshinweise</label>
+        <textarea id="psaFeld" placeholder="Bestätigte Sicherheits- und PSA-Vorgaben erfassen …"></textarea>
+        <div class="button-row" style="margin-top:8px">
+          <button type="button" class="btn btn-danger" data-speech="psaFeld">🎙 Einsprechen (optional)</button>
+        </div>
+      </details>
+      <div class="section-bar">
+        <h2>Arbeitsschritte</h2><span id="stepCount" class="step-count"></span>
+      </div>
+      <div id="schritteListe"></div>
+      <div class="layout-choice"><label for="docBildgroesse">Bildgröße im Dokument</label><select id="docBildgroesse"><option value="gross">Groß (Standard)</option><option value="kompakt">Kompakt (mehr Schritte pro Seite)</option></select></div>
+      <div class="bottom-actions">
+        <button type="button" class="btn btn-dark" id="addStepBtn">+ Arbeitsschritt hinzufügen</button>
+        <button type="button" class="btn btn-blue" id="bottomPreviewBtn">Dokumentenvorschau öffnen</button>
+      </div>
+      <details class="card draft-tools">
+        <summary>Entwurf verwalten</summary>
+        <p class="hint">Deine letzte AA wird automatisch auf diesem Gerät in diesem Browser gespeichert und beim nächsten Öffnen wieder geladen. Erst „Neue AA“ beginnt einen neuen Entwurf. Beim Löschen der Browserdaten, im privaten Modus oder auf einem anderen Gerät kann der Entwurf fehlen. Eine JSON-Sicherung enthält alle Texte, Bilder, Markierungen und Bildausschnitte. Die optionale Spracheingabe nutzt die Spracherkennung des Browsers, ggf. einen Dienst des Browseranbieters.</p>
+        <div class="button-row">
+          <button class="btn" id="backupBtn" type="button">Entwurf sichern (.json)</button>
+          <button class="btn" id="restoreBtn" type="button">Entwurf laden (.json)</button>
+          <input id="restoreFile" type="file" accept=".json,application/json" hidden>
+        </div>
+        <div id="legacyDraftControls" hidden>
+          <p class="hint">Ältere Entwürfe auf diesem Gerät können als Kopie übernommen werden. Ihre Originaldaten bleiben unverändert.</p>
+          <div class="button-row">
+            <button class="btn" id="legacyV1Btn" type="button" hidden>GitHub-Version V1 übernehmen</button>
+            <button class="btn" id="legacyV2Btn" type="button" hidden>Testversion V2 übernehmen</button>
+          </div>
+        </div>
+      </details>
+      <nav class="step-navigation" aria-label="Arbeitsschritte navigieren"><button type="button" class="btn" id="stepPrevBtn">Zurück</button><span class="step-position" id="stepPosition" aria-live="polite">Arbeitsschritte</span><button type="button" class="btn btn-blue" id="stepNextBtn">Nächster Schritt</button></nav>
+    </div>
+    <section id="previewPanel" role="tabpanel" aria-labelledby="previewTab" hidden>
+      <div class="preview-toolbar">
+        <div>
+          <h2 id="previewTitle">DIN-A4-Vorschau</h2>
+          <p class="hint">Die Word-Datei bleibt bearbeitbar; Seitenumbrüche können in Word je nach Schriftinstallation leicht abweichen.</p>
+        </div>
+        <div class="button-row">
+          <button class="btn" id="fitBtn" type="button" aria-pressed="true">Anpassen</button>
+          <button class="btn" id="actualSizeBtn" type="button" aria-pressed="false">100 %</button>
+          <button class="btn" id="backBtn" type="button">Zur Bearbeitung</button>
+        </div>
+      </div>
+      <div class="preview-layout"><label for="previewImageSize">Bildgröße</label><select id="previewImageSize"><option value="gross">Groß (Standard)</option><option value="kompakt">Kompakt</option></select></div>
+      <div id="previewMessage" class="preview-message" role="status" hidden></div>
+      <div class="preview-scroll" id="previewScroll">
+        <div id="previewSheets"></div>
+      </div>
+    </section>
+  </main>
+  <div id="measureBin" class="measure-bin" aria-hidden="true"></div>
+  <div id="printFallback">Bitte erzeugen Sie die aktuelle Druckansicht über die Schaltfläche „Drucken“ in der Arbeitsanweisungs-App.</div>
+  <noscript>Diese App benötigt JavaScript für die Bildbearbeitung und den Word-Export.</noscript>
+  <!-- The bundled native DOCX writer works locally, without a CDN or an API key. -->
+  <script>
+/*__DOCX_LIBRARY__*/
+  </script>
+  <script>
+/*__APPLICATION_SCRIPT__*/
+  </script>
+</body>
+</html>

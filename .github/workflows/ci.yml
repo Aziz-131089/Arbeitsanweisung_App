@@ -1,0 +1,35 @@
+name: Arbeitsanweisung – Build und Tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Node ${{ matrix.node }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [22, 24]
+    steps:
+      - name: Quellcode laden
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - name: Node.js einrichten
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: ${{ matrix.node }}
+          package-manager-cache: false
+      - name: Lockfile prüfen
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Generierte Dateien und Funktionen testen
+        run: npm test
+      - name: Produktionsdateien bauen
+        run: npm run build
+      - name: Reproduzierbarkeit prüfen
+        run: git diff --exit-code -- index.html vorschau.html

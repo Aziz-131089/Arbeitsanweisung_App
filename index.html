@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
-  <title>Arbeitsanweisungs-App · V3.2</title>
+  <title>Arbeitsanweisungs-App · V3.3</title>
   <style>
     :root {
       color-scheme: light;
@@ -251,7 +251,7 @@
     <header class="app-header">
       <div>
         <div class="eyebrow">Qualitätsmanagement · Fertigung</div>
-        <h1>Arbeitsanweisungs-App <span class="test-tag">V3.2</span></h1>
+        <h1>Arbeitsanweisungs-App <span class="test-tag">V3.3</span></h1>
         <div class="app-badge" id="kopfKurz">Arbeitsanweisung</div>
       </div>
     </header>
@@ -23513,7 +23513,7 @@ var __async = (__this, __arguments, generator) => {
   <script>
 'use strict';
 
-// Version 3.2 of the supplied Vanilla-JS editor. The prior HTML files and browser
+// Version 3.3 of the supplied Vanilla-JS editor. The prior HTML files and browser
 // drafts remain untouched; the generated index.html is a standalone candidate.
 // All images, draft data, preview and DOCX generation stay in the browser.
 const STORAGE_KEY_V1 = 'aa_fw_014_rdm02_stand_v1';
@@ -23746,7 +23746,7 @@ function aktualisiereKopfKurz() {
   const summary = [nr, shortPlace].filter(Boolean).join(' · ') || 'Neue Arbeitsanweisung';
   $('kopfKurz').textContent = summary;
   $('kopfSummary').textContent = 'Kopfdaten: ' + summary;
-  document.title = (nr || 'Arbeitsanweisung') + (place ? ' – ' + place : '') + ' · V3.2';
+  document.title = (nr || 'Arbeitsanweisung') + (place ? ' – ' + place : '') + ' · V3.3';
 }
 
 function collectStand() {
