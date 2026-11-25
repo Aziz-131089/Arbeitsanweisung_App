@@ -1,0 +1,27 @@
+import assert from 'node:assert/strict';
+import vm from 'node:vm';
+import { applicationSource } from './helpers.mjs';
+
+const source=await applicationSource();
+const ctx=vm.createContext({console,atob,setTimeout,clearTimeout});
+vm.runInContext(source,ctx);
+const run=expr=>vm.runInContext(expr,ctx);
+const plain=value=>JSON.parse(JSON.stringify(value));
+assert.deepEqual(plain(run('photoCanvasSize({naturalWidth:750,naturalHeight:1000})')),{w:330,h:440});
+assert.deepEqual(plain(run('photoCanvasSize({naturalWidth:1080,naturalHeight:1920})')),{w:248,h:440});
+assert.deepEqual(plain(run('photoCanvasSize({naturalWidth:1000,naturalHeight:750})')),{w:440,h:330});
+ctx.state={bild:{naturalWidth:750,naturalHeight:1000},canvasSize:{w:440,h:330},view:{zoom:1,x:0,y:0},formen:[{typ:'kreis',cx:220,cy:165,r:30}],verlauf:[{formen:[{typ:'pfeil',x1:220,y1:165,x2:250,y2:195}],view:{zoom:1,x:0,y:0}}]};
+run('adaptPhotoViewport(state)');
+assert.deepEqual(plain(ctx.state.canvasSize),{w:330,h:440});
+assert.deepEqual(plain(ctx.state.formen),[{typ:'kreis',cx:165,cy:220,r:40}]);
+assert.deepEqual(plain(ctx.state.verlauf[0].formen),[{typ:'pfeil',x1:165,y1:220,x2:205,y2:260}]);
+assert.deepEqual(plain(run('outputBounds(state)')),{x:0,y:0,w:330,h:440});
+const migrated=JSON.stringify(ctx.state);run('adaptPhotoViewport(state)');assert.equal(JSON.stringify(ctx.state),migrated);
+run('changeView(state,{zoom:2,x:10,y:20})');
+const zoomed=run('outputBounds(state)');assert.equal(zoomed.w/zoomed.h,.75);
+const portrait=run('documentStepColumns([{image:{width:750,height:1000}}])');
+assert.deepEqual(plain(portrait),[7,44,49]);
+assert.deepEqual(plain(run('photoPrintDimensions({width:750,height:1000},LAYOUT.portraitStepCols)')),{width:75,height:100});
+assert.deepEqual(plain(run('photoPrintDimensions({width:1080,height:1920},LAYOUT.portraitStepCols)')),{width:56.25,height:100});
+assert.deepEqual(plain(run('documentStepColumns([{image:{width:1000,height:750}}])')),[7,40,53]);
+console.log('PASS: 3:4 and 9:16 portrait geometry, migration of marks and undo, zoom orientation, adaptive print size and column widths.');
