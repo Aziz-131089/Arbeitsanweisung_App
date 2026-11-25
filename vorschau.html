@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
-  <title>Arbeitsanweisungs-App · V3</title>
+  <title>Arbeitsanweisungs-App · V3.1</title>
   <style>
     :root {
       color-scheme: light;
@@ -59,7 +59,7 @@
     .status-note[data-kind="ok"] { color: #166534; }
     .status-note[data-kind="warning"] { color: #92400e; }
     .card { border: 1px solid var(--border); background: var(--card); border-radius: var(--radius); margin-bottom: 13px; }
-    details.kopfdaten { padding: 14px 16px; }
+    details.kopfdaten, details.fussdaten { padding: 14px 16px; }
     details > summary { font-size: 16px; font-weight: 700; cursor: pointer; padding: 11px 0; min-height: 46px; }
     .summary-note { font-size: 13px; color: var(--muted); margin: 2px 0 0 17px; }
     .kopf-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px 15px; margin-top: 16px; }
@@ -200,7 +200,7 @@
     .doc-footer .f-distribution { line-height: 1.15; }
     .aa-sheet .f-label { font-size: 8pt; font-weight: 700; line-height: 1.15; }
     .aa-sheet .f-value { margin: 1mm 0 0; font-size: 9pt; line-height: 1.15; font-weight: 700; }
-    .aa-sheet .f-page-number { font-size: 14pt; font-weight: 700; line-height: 1.1; text-align: right; white-space: nowrap; }
+    .aa-sheet .f-page-number { font-size: 12pt; font-weight: 700; line-height: 1.1; text-align: right; white-space: nowrap; }
     .doc-empty { font-size: 10pt; color: #475569; text-align: center; padding: 4mm !important; }
     #printFallback { display: none; }
 
@@ -251,7 +251,7 @@
     <header class="app-header">
       <div>
         <div class="eyebrow">Qualitätsmanagement · Fertigung</div>
-        <h1>Arbeitsanweisungs-App <span class="test-tag">V3</span></h1>
+        <h1>Arbeitsanweisungs-App <span class="test-tag">V3.1</span></h1>
         <div class="app-badge" id="kopfKurz">Arbeitsanweisung</div>
       </div>
     </header>
@@ -261,6 +261,7 @@
         <button type="button" id="previewTab" class="btn tab" role="tab" aria-controls="previewPanel" aria-selected="false">Dokumentenvorschau</button>
       </div>
       <div class="button-row">
+        <button type="button" class="btn" id="resetBtn" title="Eine neue Arbeitsanweisung beginnen">Neue AA</button>
         <button type="button" class="btn" id="saveBtn">Speichern</button>
         <button type="button" class="btn" id="printBtn">Drucken</button>
         <button type="button" class="btn btn-blue" id="wordBtn">Word (.docx)</button>
@@ -271,7 +272,7 @@
     <div id="editorPanel" role="tabpanel" aria-labelledby="editTab" hidden>
       <details class="card kopfdaten" id="kopfDetails">
         <summary id="kopfSummary">Kopfdaten</summary>
-        <p class="summary-note">Dokument, Geltungsbereich, Logo und Freigabedaten bearbeiten.</p>
+        <p class="summary-note">Dokument, Geltungsbereich und Logo bearbeiten.</p>
         <div class="kopf-grid">
           <div>
             <label for="docNr">Dokumenten-Nr.</label>
@@ -316,7 +317,12 @@
             <label for="docGeltung">Geltungsbereich</label>
             <textarea id="docGeltung" placeholder="Für welche Mitarbeiter, Tätigkeiten und Bereiche gilt die Arbeitsanweisung?"></textarea>
           </div>
-          <div class="form-section-title">Fußzeile und Freigabe</div>
+        </div>
+      </details>
+      <details class="card fussdaten" id="fussDetails">
+        <summary id="fussSummary">Fußdaten</summary>
+        <p class="summary-note">Verteiler, Erstellung und fachliche Freigabe für die Fußzeile bearbeiten.</p>
+        <div class="kopf-grid">
           <fieldset class="kopf-full verteiler-field">
             <legend>Verteiler</legend>
             <div class="hint">Abteilungen für die Dokumentenverteilung auswählen (Mehrfachauswahl).</div>
@@ -363,11 +369,10 @@
       </div>
       <details class="card draft-tools">
         <summary>Entwurf verwalten</summary>
-        <p class="hint">Der Entwurf wird automatisch in diesem Browser gespeichert. Fotos werden beim Laden platzsparend komprimiert. Für große Entwürfe steht ein zusätzlicher lokaler Bildspeicher zur Verfügung. Eine JSON-Sicherung enthält alle Texte, Bilder, Markierungen und Bildausschnitte. Die optionale Spracheingabe nutzt die Spracherkennung des Browsers, ggf. einen Dienst des Browseranbieters.</p>
+        <p class="hint">Deine letzte AA wird automatisch auf diesem Gerät in diesem Browser gespeichert und beim nächsten Öffnen wieder geladen. Erst „Neue AA“ beginnt einen neuen Entwurf. Beim Löschen der Browserdaten, im privaten Modus oder auf einem anderen Gerät kann der Entwurf fehlen. Eine JSON-Sicherung enthält alle Texte, Bilder, Markierungen und Bildausschnitte. Die optionale Spracheingabe nutzt die Spracherkennung des Browsers, ggf. einen Dienst des Browseranbieters.</p>
         <div class="button-row">
           <button class="btn" id="backupBtn" type="button">Entwurf sichern (.json)</button>
           <button class="btn" id="restoreBtn" type="button">Entwurf laden (.json)</button>
-          <button class="btn btn-danger" id="resetBtn" type="button">Entwurf leeren</button>
           <input id="restoreFile" type="file" accept=".json,application/json" hidden>
         </div>
         <div id="legacyDraftControls" hidden>
@@ -23508,7 +23513,7 @@ var __async = (__this, __arguments, generator) => {
   <script>
 'use strict';
 
-// Version 3 of the supplied Vanilla-JS editor. The prior HTML files and browser
+// Version 3.1 of the supplied Vanilla-JS editor. The prior HTML files and browser
 // drafts remain untouched; the generated index.html is a standalone candidate.
 // All images, draft data, preview and DOCX generation stay in the browser.
 const STORAGE_KEY_V1 = 'aa_fw_014_rdm02_stand_v1';
@@ -23534,7 +23539,7 @@ const LAYOUT = Object.freeze({
   minTop: 33, minBottom: 28, gap: 5,
   headerCols: [25, 57, 18], stepCols: [7, 40, 53], portraitStepCols: [7, 44, 49], compactStepCols: [7, 35, 58], compactPortraitCols: [7, 34, 59], footerCols: [36, 38, 26],
   maxPhotoWidth: 68, maxPhotoHeight: 60, portraitPhotoWidth: 78, portraitPhotoHeight: 100, logoWidth: 29, logoHeight: 16,
-  font: 'Arial', line: 1.18
+  font: 'Arial', line: 1.18, pageNumberPt: 12
 });
 
 const $ = id => document.getElementById(id);
@@ -23599,9 +23604,10 @@ let logoDataUrl = '';
 let logoPending = null;
 let logoLoadToken = 0;
 let ready = false, applyingData = false, busy = false, dirty = false;
-let saveTimer = null, writeQueue = Promise.resolve(), saveSeq = 0;
+let saveTimer = null, saveSeq = 0, savingSeq = 0;
 let db = null, storageMode = 'none';
-let localWritable = true, storageProtected = false, lastSnapshotAt = 0;
+let localWritable = true, storageProtected = false, lastSnapshotAt = 0, lastSnapshotSize = 0;
+let persistentStorageRequested = false;
 let previousDrafts = { v1:null, v2:null };
 let previewZoom = 'fit', activePanel = 'edit', previewCurrent = false;
 let recognition = null;
@@ -23738,7 +23744,7 @@ function aktualisiereKopfKurz() {
   const summary = [nr, shortPlace].filter(Boolean).join(' · ') || 'Neue Arbeitsanweisung';
   $('kopfKurz').textContent = summary;
   $('kopfSummary').textContent = 'Kopfdaten: ' + summary;
-  document.title = (nr || 'Arbeitsanweisung') + (place ? ' – ' + place : '') + ' · V3';
+  document.title = (nr || 'Arbeitsanweisung') + (place ? ' – ' + place : '') + ' · V3.1';
 }
 
 function collectStand() {
@@ -23812,7 +23818,11 @@ function dbRead(connection=db) {
 
 function dbWrite(stand) {
   return new Promise((resolve, reject) => {
-    const tx = db.transaction('entwuerfe', 'readwrite');
+    let tx;
+    // Prefer a durable commit where supported; older browsers use their
+    // normal transaction mode.
+    try { tx = db.transaction('entwuerfe', 'readwrite', {durability:'strict'}); }
+    catch (_) { tx = db.transaction('entwuerfe', 'readwrite'); }
     tx.objectStore('entwuerfe').put(stand, 'current');
     tx.oncomplete = () => resolve();
     tx.onabort = tx.onerror = () => reject(tx.error || new Error('Entwurf konnte nicht gespeichert werden'));
@@ -23875,21 +23885,31 @@ async function loadInitialStand() {
   const old=await readPreviousDrafts();
   const stored=newestDraft(savedLocal,savedIDB);
   storageMode=localWritable?'localStorage':db?'indexedDB':'none';
-  if(stored)return {stand:normalizeStand(stored),migrated:false,readFailed,existing:true};
+  if(stored){
+    storageMode=stored===savedLocal?'localStorage':'indexedDB';
+    if(stored===savedLocal)lastSnapshotSize=JSON.stringify(savedLocal).length;
+    return {stand:normalizeStand(stored),migrated:false,readFailed,existing:true};
+  }
   if(!localReadable&&localWritable)throw new Error('Der gespeicherte V3-Entwurf ist beschädigt.');
   const source=old.v2?'v2':old.v1?'v1':null;
   if(source)return {stand:normalizeStand(old[source]),migrated:true,source,readFailed,existing:true};
   return { stand: defaultStand(true), migrated: false, readFailed, existing: false };
 }
 
-function scheduleSave() {
+function scheduleSave(immediate = false) {
   if (!ready || applyingData) return;
+  if (typeof navigator!=='undefined' && navigator.userActivation?.isActive) requestPersistentStorage();
   dirty = true;
   previewCurrent = false;
   document.body.removeAttribute('data-print-ready');
   if (!busy) setStatus('Änderungen werden gespeichert …');
-  clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => { void speichernLokal(); }, 300);
+  // A small draft is saved synchronously at each input. For large pictures,
+  // save on a short timer to keep typing responsive, and flush on exit.
+  // Unlike a debounce, continuous typing cannot postpone the first write.
+  if (immediate || (!storageProtected&&localWritable&&storageMode==='localStorage'&&lastSnapshotSize<=512*1024)) {
+    void speichernLokal(); return;
+  }
+  if (saveTimer === null) saveTimer = setTimeout(() => { void speichernLokal(); }, 160);
 }
 
 function speichernLokal(manual = false) {
@@ -23898,45 +23918,52 @@ function speichernLokal(manual = false) {
   if (!ready || applyingData) return Promise.resolve(false);
   const snapshot = collectStand(), seq = ++saveSeq;
   dirty=true;
-  // Do the fast synchronous write immediately; it also protects last-second
-  // changes when the browser is closing. The fallback is queued below.
-  let savedLocally=false;
+  const finish=(success,mode)=>{
+    if (savingSeq === seq) savingSeq = 0;
+    if (seq === saveSeq && saveTimer === null) {
+      dirty = !success;
+      if (success) {
+        storageMode=mode;
+        if (!busy || manual) {
+          const time = new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+          setStatus('Automatisch gespeichert · '+time+(mode==='indexedDB'?' · großer Bildspeicher':'')+' · bleibt beim nächsten Öffnen erhalten','ok');
+        }
+      } else {
+        setStatus('Entwurf konnte nicht gespeichert werden. Bitte als JSON sichern; der aktuelle Inhalt bleibt im geöffneten Fenster erhalten.', 'error');
+      }
+    }
+    return success;
+  };
+  // Start the synchronous write now, including on focus loss or exit.
   if(!storageProtected&&localWritable){
     try {
-      localStorage.setItem(STORAGE_KEY,JSON.stringify(snapshot));
-      savedLocally=true;
-      storageMode='localStorage';
+      const serialized=JSON.stringify(snapshot);
+      lastSnapshotSize=serialized.length;
+      localStorage.setItem(STORAGE_KEY,serialized);
+      savingSeq=0;
+      return Promise.resolve(finish(true,'localStorage'));
     } catch (_) {
       // Retain the previous snapshot and try IndexedDB. Never purge old keys.
     }
   }
-  const task = writeQueue.catch(() => {}).then(async () => {
-    try {
-      if(storageProtected)throw new Error('Vorhandener Entwurf ist geschützt');
-      const mode=savedLocally?'localStorage':'indexedDB';
-      if(!savedLocally){
-        if(!db)throw new Error('Bildspeicher nicht verfügbar');
-        await dbWrite(snapshot);
-      }
-      if (seq === saveSeq && !saveTimer) {
-        storageMode=mode;
-        dirty = false;
-        if (!busy || manual) {
-          const time = new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
-          setStatus('Entwurf lokal gespeichert · '+time+(mode==='indexedDB'?' · großer Bildspeicher':'') ,'ok');
-        }
-      }
-      return true;
-    } catch (e) {
-      if(seq===saveSeq){
-        dirty=true;
-        setStatus('Entwurf konnte nicht gespeichert werden. Bitte als JSON sichern; der aktuelle Inhalt bleibt im geöffneten Fenster erhalten.', 'error');
-      }
-      return false;
-    }
-  });
-  writeQueue = task;
-  return task;
+  if(storageProtected||!db)return Promise.resolve(finish(false,'none'));
+  // IndexedDB itself serializes overlapping readwrite transactions. Create
+  // the transaction immediately, not in a later promise queue: a closing
+  // mobile browser might suspend the JS context before that queue runs.
+  savingSeq=seq;
+  return dbWrite(snapshot).then(()=>finish(true,'indexedDB'),()=>finish(false,'none'));
+}
+
+function flushPendingDraft() {
+  if(ready&&!applyingData&&dirty&&(saveTimer!==null||!savingSeq)) void speichernLokal();
+}
+
+function requestPersistentStorage() {
+  // Best effort only. Browsers may decline or still clear data at the user's
+  // request. Ask from the explicit Save action, never block the editor.
+  if(persistentStorageRequested||!navigator.storage?.persist) return;
+  persistentStorageRequested=true;
+  try { void navigator.storage.persist().catch(()=>{}); } catch (_) {}
 }
 
 async function waitForImages() {
@@ -24582,7 +24609,7 @@ async function bildLaden(event, nr) {
     canvasNeuZeichnen(nr); syncEditorControls(nr); updateThumbnail(nr);
     // Keep the editor closed unless the user has deliberately opened it.
     setPhotoStatus(nr, 'Foto geladen · ' + image.naturalWidth + ' × ' + image.naturalHeight + ' px');
-    scheduleSave();
+    scheduleSave(true);
   }).catch(error => {
     if (bildStatus[nr] === st && token === st.token) setPhotoStatus(nr, error.message, true);
   }).finally(() => { if (bildStatus[nr] === st && token === st.token) { st.pending = null; syncEditorControls(nr);updateStepSummary(nr); } });
@@ -24656,7 +24683,7 @@ async function logoLaden(event) {
   const token = ++logoLoadToken;
   logoPending = resizeUpload(file, 900, true).then(result => {
     if (token !== logoLoadToken) return;
-    logoDataUrl = result.url; updateLogoUI(); scheduleSave();
+    logoDataUrl = result.url; updateLogoUI(); scheduleSave(true);
   }).catch(error => {
     if (token === logoLoadToken) setStatus(error.message, 'error');
   }).finally(() => { if (token === logoLoadToken) logoPending = null; });
@@ -25143,7 +25170,7 @@ function buildWordDocument(model, layout) {
   // run, plus a named paragraph style. This preserves the number's font
   // when a Word-compatible application recalculates PAGE and NUMPAGES.
   function pageField(instruction, cached) {
-    const opts=runOpts({size:14,bold:true});
+    const opts=runOpts({size:LAYOUT.pageNumberPt,bold:true});
     const char=type=>new D.TextRun({...opts,children:[new D.ImportedXmlComponent('w:fldChar',{'w:fldCharType':type})]});
     const code=new D.ImportedXmlComponent('w:instrText',{'xml:space':'preserve'});
     code.push(' ' + instruction + ' \\* CHARFORMAT ');
@@ -25151,9 +25178,9 @@ function buildWordDocument(model, layout) {
       new D.TextRun({...opts,text:String(cached)}),char('end')];
   }
   const pageRuns = [
-    ...runs('Seite ',{size:14,bold:true}),
+    ...runs('Seite ',{size:LAYOUT.pageNumberPt,bold:true}),
     ...pageField('PAGE',1),
-    ...runs(' von ',{size:14,bold:true}),
+    ...runs(' von ',{size:LAYOUT.pageNumberPt,bold:true}),
     ...pageField('NUMPAGES',layout.pageCount || 1)
   ];
   const footer = new D.Footer({children:[table(footerCols,[
@@ -25168,7 +25195,7 @@ function buildWordDocument(model, layout) {
         paragraph('GEPRÜFT & FREIGEGEBEN DURCH / DATUM',{size:8,bold:true,line:276,after:mmToTwip(1)}),
         paragraph(approvalValue(model.freigegebenDurch,model.freigegebenDatum),{size:9,bold:true,line:276})
       ],{valign:middle,px:1.7,py:1.3}),
-      cell(footerCols[2],[paragraph(pageRuns,{style:'AAPageNumber',align:D.AlignmentType.RIGHT,line:264,defaultRun:{size:14,bold:true}})],{valign:middle,px:1.7,py:1.3})
+      cell(footerCols[2],[paragraph(pageRuns,{style:'AAPageNumber',align:D.AlignmentType.RIGHT,line:264,defaultRun:{size:LAYOUT.pageNumberPt,bold:true}})],{valign:middle,px:1.7,py:1.3})
     ])
   ])]});
 
@@ -25210,7 +25237,7 @@ function buildWordDocument(model, layout) {
     styles:{
       default:{document:{run:{font:LAYOUT.font,size:20,color:'000000'},paragraph:{spacing:{after:0,line:283}}}},
       paragraphStyles:[{id:'AAPageNumber',name:'AA Seitenzahl',basedOn:'Normal',
-        run:{font:LAYOUT.font,size:28,bold:true,color:'000000'},
+        run:{font:LAYOUT.font,size:LAYOUT.pageNumberPt*2,bold:true,color:'000000'},
         paragraph:{alignment:D.AlignmentType.RIGHT,spacing:{before:0,after:0,line:264}}}]
     },
     sections:[{
@@ -25251,7 +25278,7 @@ function showPanel(panel, scrollTop=false) {
 
 function setBusy(isBusy) {
   busy=isBusy;
-  for (const id of ['saveBtn','wordBtn','printBtn','previewTab','bottomPreviewBtn','previewImageSize']) $(id).disabled=isBusy||!ready;
+  for (const id of ['resetBtn','saveBtn','wordBtn','printBtn','previewTab','bottomPreviewBtn','previewImageSize']) $(id).disabled=isBusy||!ready;
   $('editorPanel').inert = Boolean(isBusy);
 }
 
@@ -25330,7 +25357,9 @@ async function adoptDraft(stand,successMessage) {
   storageProtected=false;
   applyStand(stand); showPanel('edit',true);
   await Promise.allSettled(Object.values(bildStatus).map(st=>st.pending).filter(Boolean));
-  if (await speichernLokal(true)) setStatus(successMessage,'ok');
+  const saved=await speichernLokal(true);
+  if (saved) setStatus(successMessage,'ok');
+  return saved;
 }
 
 async function importDraft(event) {
@@ -25366,19 +25395,29 @@ async function restorePreviousDraft(source) {
 
 async function entwurfZuruecksetzen() {
   if (!ready || busy) return;
-  if (!confirm('Den aktuellen Entwurf leeren? Unternehmen, Logo und Verteiler bleiben erhalten. Ältere Versionen werden nicht verändert.')) return;
+  if (!confirm('Eine neue Arbeitsanweisung beginnen? Der bisherige Entwurf wird ersetzt. Falls du ihn später weiterbearbeiten möchtest, sichere ihn zuerst als JSON. Unternehmen, Logo, Verteiler, Ersteller und Bildgröße werden übernommen.')) return;
   setBusy(true);
   if (recognition) {try{recognition.abort();}catch(_){}}
-  const next=defaultStand(false);
-  next.docFirma=$('docFirma').value;
-  next.logoDataUrl=logoDataUrl;
-  next.verteiler=$('verteiler').value;
-  next.verteilerAlt=$('verteiler').dataset.previous || '';
-  next.erstelltDurch=$('erstelltDurch').value;
-  next.docBildgroesse=$('docBildgroesse').value;
   try{
-    await adoptDraft(next,'Neuer leerer Entwurf. Unternehmensdaten bleiben erhalten.');
-    $('kopfDetails').open=true;
+    await Promise.allSettled([...Object.values(bildStatus).map(st=>st.pending).filter(Boolean),...(logoPending?[logoPending]:[])]);
+    const previous=collectStand(), wasProtected=storageProtected, next=defaultStand(false);
+    next.docFirma=previous.docFirma;
+    next.logoDataUrl=previous.logoDataUrl;
+    next.verteiler=previous.verteiler;
+    next.verteilerAlt=previous.verteilerAlt;
+    next.erstelltDurch=previous.erstelltDurch;
+    next.docBildgroesse=previous.docBildgroesse;
+    if(await adoptDraft(next,'Neue AA begonnen und lokal gespeichert. Unternehmensdaten bleiben erhalten.')){
+      $('kopfDetails').open=true;
+      $('fussDetails').open=false;
+    }else{
+      // Never discard the visible working draft when the replacement could
+      // not be written to either storage backend.
+      storageProtected=wasProtected;
+      applyStand(previous); showPanel('edit',true);
+      dirty=true;
+      setStatus('Neue AA konnte nicht gespeichert werden. Der bisherige Entwurf bleibt geöffnet. Bitte als JSON sichern.','error');
+    }
   }finally{setBusy(false);}
 }
 
@@ -25405,6 +25444,7 @@ function bindUI() {
   $('stepNextBtn').addEventListener('click',()=>navigateStep(1));
   $('saveBtn').addEventListener('click',async()=>{
     if (!ready || busy) return;
+    requestPersistentStorage();
     setStatus('Entwurf wird gespeichert …');
     await Promise.allSettled([...Object.values(bildStatus).map(st=>st.pending).filter(Boolean),...(logoPending?[logoPending]:[])]);
     await speichernLokal(true);
@@ -25433,9 +25473,12 @@ function bindUI() {
     }
   });
   if (window.ResizeObserver) new ResizeObserver(fitPreview).observe($('previewScroll'));
-  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&dirty) void speichernLokal();});
-  window.addEventListener('pagehide',()=>{if(dirty) void speichernLokal();});
+  document.addEventListener('change',flushPendingDraft);
+  document.addEventListener('focusout',()=>{if(saveTimer!==null)flushPendingDraft();});
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flushPendingDraft();});
+  window.addEventListener('pagehide',flushPendingDraft);
   window.addEventListener('beforeunload',event=>{
+    flushPendingDraft();
     if (dirty || logoPending || Object.values(bildStatus).some(st=>st.pending)) {
       event.preventDefault(); event.returnValue='';
     }
@@ -25461,9 +25504,9 @@ async function initialize() {
     } else if (result.readFailed || storageMode==='none') {
       setStatus('Lokaler Speicher eingeschränkt. Bitte den Entwurf zusätzlich als JSON sichern.','warning');
     } else if (result.existing) {
-      setStatus('Gespeicherter Entwurf geladen.','ok');
+      setStatus('Letzte AA wiederhergestellt · Änderungen werden automatisch gespeichert.','ok');
     } else {
-      setStatus('Bereit · Änderungen werden lokal gespeichert.');
+      setStatus('Bereit · Letzte AA wird automatisch in diesem Browser gespeichert.');
     }
   } catch (error) {
     // Do not silently overwrite a damaged saved draft.
