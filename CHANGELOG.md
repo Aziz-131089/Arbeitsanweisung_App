@@ -1,6 +1,6 @@
 # Änderungshistorie
 
-## V3.3.0 – Strukturmigration (Kandidat)
+## V3.3.0 – Strukturmigration (Kandidat) auf V3.3.0 – Strukturmigration (Freigegeben am 25.11.2026)
 
 - Den V3.2-Code mechanisch nach Aufgaben in 13 JS-Quelldateien und eine separate CSS-Datei zerlegt; HTML-Vorlage, Logo, Word-Bibliothek und Lizenz getrennt abgelegt.
 - Selbstständigen, reproduzierbaren Node-Build ohne externe Paketinstallation oder ursprüngliche Word-Vorlage eingerichtet.
